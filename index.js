@@ -110,6 +110,36 @@ const tools = [
       required: ["service"],
     },
   },
+  {
+    name: "start_process",
+    description:
+      "Starts a stopped PM2 process. Use this when the user wants to start a service that is currently stopped or offline.",
+    input_schema: {
+      type: "object",
+      properties: {
+        process_name: {
+          type: "string",
+          description: "The PM2 process name to start.",
+        },
+      },
+      required: ["process_name"],
+    },
+  },
+  {
+    name: "stop_process",
+    description:
+      "Stops a running PM2 process. Use this when the user wants to stop or shut down a service.",
+    input_schema: {
+      type: "object",
+      properties: {
+        process_name: {
+          type: "string",
+          description: "The PM2 process name to stop.",
+        },
+      },
+      required: ["process_name"],
+    },
+  },
 ];
 
 // ─────────────────────────────────────────
@@ -136,7 +166,7 @@ async function executeTool(toolName, toolInput) {
         const name = toolInput.process_name || "portfolio";
         const lines = toolInput.lines || 50;
         const { stdout } = await execAsync(
-          `pm2 logs ${name} --lines ${lines} --nostream 2>&1`
+          `pm2 logs ${name} --lines ${lines} --nostream 2>&1`,
         );
         return stdout;
       }
@@ -145,7 +175,7 @@ async function executeTool(toolName, toolInput) {
         const path = toolInput.project_path || "/var/www/portfolio";
         const process = toolInput.process_name || "portfolio";
         const { stdout, stderr } = await execAsync(
-          `cd ${path} && git pull origin main && npm install && npm run build && pm2 restart ${process} 2>&1`
+          `cd ${path} && git pull origin main && npm install && npm run build && pm2 restart ${process} 2>&1`,
         );
         return stdout + stderr;
       }
@@ -158,7 +188,7 @@ async function executeTool(toolName, toolInput) {
       case "get_git_status": {
         const path = toolInput.project_path || "/var/www/portfolio";
         const { stdout } = await execAsync(
-          `cd ${path} && git status && echo '---COMMITS---' && git log --oneline -5`
+          `cd ${path} && git status && echo '---COMMITS---' && git log --oneline -5`,
         );
         return stdout;
       }
@@ -167,13 +197,27 @@ async function executeTool(toolName, toolInput) {
         const service = toolInput.service;
         if (service === "nginx") {
           const { stdout } = await execAsync(
-            "sudo systemctl restart nginx && echo 'nginx restarted successfully'"
+            "sudo systemctl restart nginx && echo 'nginx restarted successfully'",
           );
           return stdout;
         } else {
           const { stdout } = await execAsync(`pm2 restart ${service}`);
           return stdout;
         }
+      }
+
+      case "start_process": {
+        const { stdout } = await execAsync(
+          `pm2 start ${toolInput.process_name}`,
+        );
+        return stdout;
+      }
+
+      case "stop_process": {
+        const { stdout } = await execAsync(
+          `pm2 stop ${toolInput.process_name}`,
+        );
+        return stdout;
       }
 
       default:

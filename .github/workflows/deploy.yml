@@ -1,0 +1,21 @@
+name: Deploy MCP Server
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/mcp-server
+            git pull origin main
+            npm install
+            pm2 restart mcp-server || pm2 start index.js --name mcp-server

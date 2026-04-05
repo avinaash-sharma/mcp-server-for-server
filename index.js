@@ -13,6 +13,8 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 //  TOOL DEFINITIONS
 //  Claude reads these descriptions to decide
 //  which tool to call — write them clearly!
+// Be specific about when to use each tool, and what input they need.
+// www.myselfavinash.com
 // ─────────────────────────────────────────
 const tools = [
   {
